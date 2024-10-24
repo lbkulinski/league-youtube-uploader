@@ -27,5 +27,5 @@ your project
     ```
 8. Follow the prompts to authenticate with your Google account and authorize the application to access your YouTube 
 channel
-10. The application will then read the video files from the specified path and upload them to your YouTube channel
+9. The application will then read the video files from the specified path and upload them to your YouTube channel
 
