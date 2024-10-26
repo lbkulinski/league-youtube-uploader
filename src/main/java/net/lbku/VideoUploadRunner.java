@@ -33,6 +33,10 @@ import java.util.*;
 public final class VideoUploadRunner implements ApplicationRunner {
     private final String videosPath;
 
+    private final String leagueSeason;
+
+    private final String leagueSplit;
+
     private final GsonFactory gsonFactory;
 
     private static final Logger LOGGER;
@@ -42,8 +46,14 @@ public final class VideoUploadRunner implements ApplicationRunner {
     }
 
     @Autowired
-    public VideoUploadRunner(@Value("${videos.path}") String videosPath) {
+    public VideoUploadRunner(@Value("${videos.path}") String videosPath,
+        @Value("${league-of-legends.season}") String leagueSeason,
+        @Value("${league-of-legends.split}") String leagueSplit) {
         this.videosPath = Objects.requireNonNull(videosPath);
+
+        this.leagueSeason = Objects.requireNonNull(leagueSeason);
+
+        this.leagueSplit = Objects.requireNonNull(leagueSplit);
 
         this.gsonFactory = GsonFactory.getDefaultInstance();
     }
@@ -143,7 +153,8 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         String dateString = formatter.format(date);
 
-        String title = String.format("LoL Season 2024 - Split 3 -- %s %d/%d", dateString, index, count);
+        String title = String.format("LoL Season %s - Split %s -- %s %d/%d", this.leagueSeason, this.leagueSplit,
+            dateString, index, count);
 
         VideoUploadRunner.LOGGER.info("Uploading {}...", title);
 
