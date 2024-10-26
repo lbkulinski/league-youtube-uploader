@@ -1,2 +1,5 @@
 videos:
   path: ${VIDEOS_PATH}
+league-of-legends:
+  season: ${LEAGUE_OF_LEGENDS_SEASON}
+  split: ${LEAGUE_OF_LEGENDS_SPLIT}

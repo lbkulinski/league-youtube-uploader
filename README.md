@@ -16,7 +16,10 @@ your project
 2. Clone the repository
 3. Navigate to the project directory
 4. Place the `client_secret.json` file in `src/main/resources`
-5. Ensure that the `VIDEOS_PATH` environment variable is set to the path where your video files are located
+5. Ensure that the following environment variables are set:
+   1. `VIDEOS_PATH` — The path where your video files are located
+   2. `LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
+   3. `LEAGUE_OF_LEGENDS_SPLIT` — The League of Legends split that the videos are from
 6. Build the project using Maven:
     ```bash
     ./mvnw clean install
