@@ -85,7 +85,7 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
                 LocalDate date = LocalDate.parse(dateString);
 
-                datesToVideos.compute(date, (_, value) -> {
+                datesToVideos.compute(date, (key, value) -> {
                     if (value == null) {
                         value = new ArrayList<>();
                     }
