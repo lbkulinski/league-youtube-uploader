@@ -33,9 +33,11 @@ import java.util.*;
 public final class VideoUploadRunner implements ApplicationRunner {
     private final String videosPath;
 
+    private final String leagueYear;
+
     private final String leagueSeason;
 
-    private final String leagueSplit;
+    private final String leagueAct;
 
     private final GsonFactory gsonFactory;
 
@@ -47,13 +49,16 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
     @Autowired
     public VideoUploadRunner(@Value("${videos.path}") String videosPath,
+        @Value("${league-of-legends.year}") String leagueYear,
         @Value("${league-of-legends.season}") String leagueSeason,
-        @Value("${league-of-legends.split}") String leagueSplit) {
+        @Value("${league-of-legends.act}") String leagueAct) {
         this.videosPath = Objects.requireNonNull(videosPath);
+
+        this.leagueYear = Objects.requireNonNull(leagueYear);
 
         this.leagueSeason = Objects.requireNonNull(leagueSeason);
 
-        this.leagueSplit = Objects.requireNonNull(leagueSplit);
+        this.leagueAct = Objects.requireNonNull(leagueAct);
 
         this.gsonFactory = GsonFactory.getDefaultInstance();
     }
@@ -85,7 +90,7 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
                 LocalDate date = LocalDate.parse(dateString);
 
-                datesToVideos.compute(date, (_, value) -> {
+                datesToVideos.compute(date, (ignored, value) -> {
                     if (value == null) {
                         value = new ArrayList<>();
                     }
@@ -142,7 +147,7 @@ public final class VideoUploadRunner implements ApplicationRunner {
         return builder.build();
     }
 
-    private Video getVideo(LocalDate date, int index, int count) {
+    private Video getVideo(LocalDate date, Integer index, Integer count) {
         Video video = new Video();
 
         VideoSnippet snippet = new VideoSnippet();
@@ -153,8 +158,8 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         String dateString = formatter.format(date);
 
-        String title = String.format("LoL Season %s - Split %s -- %s %d/%d", this.leagueSeason, this.leagueSplit,
-            dateString, index, count);
+        String title = "LoL %s Season %s - Act %s -- %s %d/%d".formatted(this.leagueYear, this.leagueSeason,
+                this.leagueAct, dateString, index, count);
 
         VideoUploadRunner.LOGGER.info("Uploading {}...", title);
 
