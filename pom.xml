@@ -14,7 +14,7 @@
     <name>league-youtube-upload</name>
     <description>league-youtube-upload</description>
     <properties>
-        <java.version>23</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>

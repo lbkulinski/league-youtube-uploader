@@ -1,5 +1,7 @@
 videos:
   path: ${VIDEOS_PATH}
 league-of-legends:
+  year: ${LEAGUE_OF_LEGENDS_YEAR}
   season: ${LEAGUE_OF_LEGENDS_SEASON}
-  split: ${LEAGUE_OF_LEGENDS_SPLIT}
+  act: ${LEAGUE_OF_LEGENDS_ACT}
+  champion: ${LEAGUE_OF_LEGENDS_CHAMPION:}

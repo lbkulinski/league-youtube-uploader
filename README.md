@@ -11,15 +11,17 @@ your project
 3. Rename the downloaded file to `client_secret.json`
 
 ## Running the application
-1. Make sure you have Java 23 or higher installed
-    1. If needed, you can download it from [jdk.java.net](https://jdk.java.net/23/)
+1. Make sure you have Java 21 or higher installed
+    1. If needed, you can download it from [AWS](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/downloads-list.html)
 2. Clone the repository
 3. Navigate to the project directory
 4. Place the `client_secret.json` file in `src/main/resources`
 5. Ensure that the following environment variables are set:
    1. `VIDEOS_PATH` — The path where your video files are located
-   2. `LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
-   3. `LEAGUE_OF_LEGENDS_SPLIT` — The League of Legends split that the videos are from
+   2. `LEAGUE_OF_LEGENDS_YEAR` - The year that the videos are from
+   3. `LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
+   4. `LEAGUE_OF_LEGENDS_ACT` — The League of Legends act that the videos are from
+   5. `LEAGUE_OF_LEGENDS_CHAMPION` - An optional field specifying the Legends of Legends champion you played in the video
 6. Build the project using Maven:
     ```bash
     ./mvnw clean install
