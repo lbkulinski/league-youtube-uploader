@@ -33,11 +33,13 @@ import java.util.*;
 public final class VideoUploadRunner implements ApplicationRunner {
     private final String videosPath;
 
-    private final String leagueYear;
+    private final String year;
 
-    private final String leagueSeason;
+    private final String season;
 
-    private final String leagueAct;
+    private final String act;
+
+    private final String champion;
 
     private final GsonFactory gsonFactory;
 
@@ -49,16 +51,19 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
     @Autowired
     public VideoUploadRunner(@Value("${videos.path}") String videosPath,
-        @Value("${league-of-legends.year}") String leagueYear,
-        @Value("${league-of-legends.season}") String leagueSeason,
-        @Value("${league-of-legends.act}") String leagueAct) {
+        @Value("${league-of-legends.year}") String year,
+        @Value("${league-of-legends.season}") String season,
+        @Value("${league-of-legends.act}") String act,
+        @Value("${league-of-legends.champion}") String champion) {
         this.videosPath = Objects.requireNonNull(videosPath);
 
-        this.leagueYear = Objects.requireNonNull(leagueYear);
+        this.year = Objects.requireNonNull(year);
 
-        this.leagueSeason = Objects.requireNonNull(leagueSeason);
+        this.season = Objects.requireNonNull(season);
 
-        this.leagueAct = Objects.requireNonNull(leagueAct);
+        this.act = Objects.requireNonNull(act);
+
+        this.champion = Objects.requireNonNull(champion);
 
         this.gsonFactory = GsonFactory.getDefaultInstance();
     }
@@ -158,8 +163,15 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         String dateString = formatter.format(date);
 
-        String title = "LoL %s Season %s - Act %s -- %s %d/%d".formatted(this.leagueYear, this.leagueSeason,
-                this.leagueAct, dateString, index, count);
+        String title;
+
+        if (Objects.equals(this.champion, "")) {
+            title = "LoL %s Season %s Act %s -- %s %d/%d".formatted(this.year, this.season, this.act, dateString,
+                index, count);
+        } else {
+            title = "LoL %s Season %s Act %s (%s) -- %s %d/%d".formatted(this.year, this.season, this.act,
+                this.champion, dateString, index, count);
+        }
 
         VideoUploadRunner.LOGGER.info("Uploading {}...", title);
 
