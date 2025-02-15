@@ -21,7 +21,7 @@ your project
    2. `LEAGUE_OF_LEGENDS_YEAR` - The year that the videos are from
    3. `LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
    4. `LEAGUE_OF_LEGENDS_ACT` — The League of Legends act that the videos are from
-   5. `LEAGUE_OF_LEGENDS_CHAMPION` - An optional field specifying the champion you played in the video
+   5. `LEAGUE_OF_LEGENDS_CHAMPION` - An optional field specifying the Legends of Legends champion you played in the video
 6. Build the project using Maven:
     ```bash
     ./mvnw clean install
