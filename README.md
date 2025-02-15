@@ -11,7 +11,7 @@ your project
 3. Rename the downloaded file to `client_secret.json`
 
 ## Running the application
-_NOTE:_ This application assumes your videos start with a date. This happens by default when recording with OBS
+_NOTE:_ This application assumes your videos start with a date of the form `yyyy-mm-dd`. This happens by default when recording with OBS
 
 1. Make sure you have Java 21 or higher installed
     1. If needed, you can download it from [AWS](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/downloads-list.html)
