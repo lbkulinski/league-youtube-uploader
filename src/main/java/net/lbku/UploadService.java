@@ -9,19 +9,18 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.YouTubeScopes;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
+import io.avaje.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
@@ -29,51 +28,39 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Component
-public final class VideoUploadRunner implements ApplicationRunner {
-    private final String videosPath;
+public final class UploadService {
+    private final static GsonFactory GSON_FACTORY;
 
-    private final String year;
+    private static final FileDataStoreFactory DATA_STORE_FACTORY;
 
-    private final String season;
-
-    private final String act;
-
-    private final String champion;
-
-    private final GsonFactory gsonFactory;
+    private static final String GAMING_CATEGORY_ID;
 
     private static final Logger LOGGER;
 
     static {
-        LOGGER = LoggerFactory.getLogger(VideoUploadRunner.class);
-    }
+        GSON_FACTORY = new GsonFactory();
 
-    @Autowired
-    public VideoUploadRunner(@Value("${videos.path}") String videosPath,
-        @Value("${league-of-legends.year}") String year,
-        @Value("${league-of-legends.season}") String season,
-        @Value("${league-of-legends.act}") String act,
-        @Value("${league-of-legends.champion}") String champion) {
-        this.videosPath = Objects.requireNonNull(videosPath);
+        File directory = new File(System.getProperty("user.home"), ".credentials/youtube-upload");
 
-        this.year = Objects.requireNonNull(year);
+        try {
+            DATA_STORE_FACTORY = new FileDataStoreFactory(directory);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
 
-        this.season = Objects.requireNonNull(season);
+        GAMING_CATEGORY_ID = "20";
 
-        this.act = Objects.requireNonNull(act);
-
-        this.champion = Objects.requireNonNull(champion);
-
-        this.gsonFactory = GsonFactory.getDefaultInstance();
+        LOGGER = LoggerFactory.getLogger(Application.class);
     }
 
     private Map<LocalDate, List<File>> getDatesToVideos() {
-        Path videosDirectory = Path.of(this.videosPath);
+        String videosPath = Config.get("app.videos.path");
+
+        Path videosDirectory = Path.of(videosPath);
 
         Map<LocalDate, List<File>> datesToVideos = new TreeMap<>();
 
-        try (var stream = Files.newDirectoryStream(videosDirectory)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(videosDirectory)) {
             for (Path path : stream) {
                 File file = path.toFile();
 
@@ -86,7 +73,7 @@ public final class VideoUploadRunner implements ApplicationRunner {
                 String[] parts = name.split(" ");
 
                 if (parts.length < 2) {
-                    VideoUploadRunner.LOGGER.warn("File \"{}\" does not start with a date", name);
+                    LOGGER.warn("File \"{}\" does not start with a date", name);
 
                     continue;
                 }
@@ -113,31 +100,29 @@ public final class VideoUploadRunner implements ApplicationRunner {
     }
 
     private Credential getCredential(NetHttpTransport httpTransport) throws IOException {
-        Path path = Path.of("src/main/resources/client_secret.json");
+        String secretPathString = Config.get("app.youtube.client-secret-path");
 
-        InputStream inputStream = Files.newInputStream(path);
+        Path secretPath = Path.of(secretPathString);
 
-        List<String> scopes = List.of(
-            "https://www.googleapis.com/auth/youtube.upload",
-            "https://www.googleapis.com/auth/youtube",
-            "https://www.googleapis.com/auth/youtubepartner",
-            "https://www.googleapis.com/auth/youtube.force-ssl"
-        );
+        InputStream inputStream = Files.newInputStream(secretPath);
+
+        GoogleAuthorizationCodeFlow flow;
 
         try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(this.gsonFactory, inputStreamReader);
+            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GSON_FACTORY, inputStreamReader);
 
-            GoogleAuthorizationCodeFlow.Builder builder = new GoogleAuthorizationCodeFlow.Builder(httpTransport,
-                this.gsonFactory, clientSecrets, scopes);
-
-            GoogleAuthorizationCodeFlow flow = builder.build();
-
-            LocalServerReceiver receiver = new LocalServerReceiver();
-
-            AuthorizationCodeInstalledApp app = new AuthorizationCodeInstalledApp(flow, receiver);
-
-            return app.authorize("user");
+            flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, GSON_FACTORY, clientSecrets,
+                List.of(YouTubeScopes.YOUTUBE_UPLOAD))
+                .setDataStoreFactory(DATA_STORE_FACTORY)
+                .setAccessType("offline")
+                .build();
         }
+
+        LocalServerReceiver receiver = new LocalServerReceiver();
+
+        AuthorizationCodeInstalledApp app = new AuthorizationCodeInstalledApp(flow, receiver);
+
+        return app.authorize("user");
     }
 
     private YouTube getYouTube() throws GeneralSecurityException, IOException {
@@ -145,11 +130,28 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         Credential credential = this.getCredential(httpTransport);
 
-        YouTube.Builder builder = new YouTube.Builder(httpTransport, this.gsonFactory, credential);
+        YouTube.Builder builder = new YouTube.Builder(httpTransport, GSON_FACTORY, credential);
 
         builder.setApplicationName("YouTube League Uploader");
 
         return builder.build();
+    }
+
+    private String getTitle(LocalDate date, int index, int count) {
+        String year = Config.get("app.league-of-legends.year");
+
+        String season = Config.get("app.league-of-legends.season");
+
+        String act = Config.get("app.league-of-legends.act");
+
+        String champion = Config.get("app.league-of-legends.champion");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
+        String dateString = formatter.format(date);
+
+        return  "LoL %s Season %s Act %s (%s) -- %s %d/%d".formatted(year, season, act, champion, dateString, index,
+            count);
     }
 
     private Video getVideo(LocalDate date, Integer index, Integer count) {
@@ -157,23 +159,11 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         VideoSnippet snippet = new VideoSnippet();
 
-        snippet.setCategoryId("20");
+        snippet.setCategoryId(GAMING_CATEGORY_ID);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String title = this.getTitle(date, index, count);
 
-        String dateString = formatter.format(date);
-
-        String title;
-
-        if (Objects.equals(this.champion, "")) {
-            title = "LoL %s Season %s Act %s -- %s %d/%d".formatted(this.year, this.season, this.act, dateString,
-                index, count);
-        } else {
-            title = "LoL %s Season %s Act %s (%s) -- %s %d/%d".formatted(this.year, this.season, this.act,
-                this.champion, dateString, index, count);
-        }
-
-        VideoUploadRunner.LOGGER.info("Uploading {}...", title);
+        LOGGER.info("Uploading {}...", title);
 
         snippet.setTitle(title);
 
@@ -182,6 +172,8 @@ public final class VideoUploadRunner implements ApplicationRunner {
         VideoStatus status = new VideoStatus();
 
         status.setPrivacyStatus("unlisted");
+
+        status.setSelfDeclaredMadeForKids(false);
 
         video.setStatus(status);
 
@@ -197,27 +189,24 @@ public final class VideoUploadRunner implements ApplicationRunner {
 
         try (FileInputStream fileInputStream = new FileInputStream(file);
              BufferedInputStream inputStream = new BufferedInputStream(fileInputStream)) {
-            String type = "application/octet-stream";
-
-            InputStreamContent mediaContent = new InputStreamContent(type, inputStream);
+            InputStreamContent mediaContent = new InputStreamContent("application/octet-stream", inputStream);
 
             YouTube.Videos.Insert request = youTube.videos()
                                                    .insert(List.of("snippet", "status"), video, mediaContent);
 
             Video response = request.execute();
 
-            VideoUploadRunner.LOGGER.info("Upload response: {}", response);
+            LOGGER.info("Upload response: {}", response);
         } catch (IOException e) {
             String message = e.getMessage();
 
-            VideoUploadRunner.LOGGER.error(message, e);
+            LOGGER.error(message, e);
 
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
-    @Override
-    public void run(ApplicationArguments args) {
+    public void uploadVideos() {
         YouTube youTube;
 
         try {
@@ -225,9 +214,9 @@ public final class VideoUploadRunner implements ApplicationRunner {
         } catch (GeneralSecurityException | IOException e) {
             String message = e.getMessage();
 
-            VideoUploadRunner.LOGGER.error(message, e);
+            LOGGER.error(message, e);
 
-            throw new RuntimeException(e);
+            return;
         }
 
         Map<LocalDate, List<File>> datesToVideos = this.getDatesToVideos();
