@@ -1,5 +1,5 @@
 # league-youtube-uploader
-This project houses a simple Spring `ApplicationRunner` that will read the video files out of the specified path and 
+This project houses a simple Java class that will read the video files out of the specified path and 
 upload them to a specified YouTube channel.
 
 ## Gaining access to the YouTube API
@@ -19,18 +19,20 @@ _NOTE:_ This application assumes your videos start with a date. This happens by 
 3. Navigate to the project directory
 4. Place the `client_secret.json` file in `src/main/resources`
 5. Ensure that the following environment variables are set:
-   1. `VIDEOS_PATH` — The path where your video files are located
-   2. `LEAGUE_OF_LEGENDS_YEAR` - The year that the videos are from
-   3. `LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
-   4. `LEAGUE_OF_LEGENDS_ACT` — The League of Legends act that the videos are from
-   5. `LEAGUE_OF_LEGENDS_CHAMPION` - An optional field specifying the Legends of Legends champion you played in the video
+   1. `APP_YOUTUBE_CLIENT_SECRET_PATH` — The path where your YouTube client secret is stored 
+   2. `APP_VIDEOS_PATH` — The path where your video files are located
+   3. `APP_LEAGUE_OF_LEGENDS_YEAR` — The year that the videos are from
+   4. `APP_LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
+   5. `APP_LEAGUE_OF_LEGENDS_ACT` — The League of Legends act that the videos are from
+   6. `APP_LEAGUE_OF_LEGENDS_CHAMPION` — An optional field specifying the Legends of Legends champion you played in the
+video
 6. Build the project using Maven:
     ```bash
     ./mvnw clean install
     ```
 7. Run the application:
     ```bash
-    ./mvnw spring-boot:run
+    ./mvnw exec:java
     ```
 8. Follow the prompts to authenticate with your Google account and authorize the application to access your YouTube 
 channel
