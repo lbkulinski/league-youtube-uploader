@@ -24,8 +24,7 @@ _NOTE:_ This application assumes your videos start with a date of the form `yyyy
    3. `APP_LEAGUE_OF_LEGENDS_YEAR` — The year that the videos are from
    4. `APP_LEAGUE_OF_LEGENDS_SEASON` — The League of Legends season that the videos are from
    5. `APP_LEAGUE_OF_LEGENDS_ACT` — The League of Legends act that the videos are from
-   6. `APP_LEAGUE_OF_LEGENDS_CHAMPION` — An optional field specifying the Legends of Legends champion you played in the
-video
+   6. `APP_LEAGUE_OF_LEGENDS_CHAMPION` — The Legends of Legends champion you played in the video
 6. Build the project using Maven:
     ```bash
     ./mvnw clean install
