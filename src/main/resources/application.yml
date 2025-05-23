@@ -1,7 +1,10 @@
-videos:
-  path: ${VIDEOS_PATH}
-league-of-legends:
-  year: ${LEAGUE_OF_LEGENDS_YEAR}
-  season: ${LEAGUE_OF_LEGENDS_SEASON}
-  act: ${LEAGUE_OF_LEGENDS_ACT}
-  champion: ${LEAGUE_OF_LEGENDS_CHAMPION:}
+app:
+  youtube:
+    client-secret-path: ${APP_YOUTUBE_CLIENT_SECRET_PATH}
+  videos:
+    path: ${APP_VIDEOS_PATH}
+  league-of-legends:
+    year: ${APP_LEAGUE_OF_LEGENDS_YEAR}
+    season: ${APP_LEAGUE_OF_LEGENDS_SEASON}
+    act: ${APP_LEAGUE_OF_LEGENDS_ACT}
+    champion: ${APP_LEAGUE_OF_LEGENDS_CHAMPION}
