@@ -29,28 +29,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public final class UploadService {
-    private final static GsonFactory GSON_FACTORY;
+    private static final Logger log = LoggerFactory.getLogger(UploadService.class);
 
-    private static final FileDataStoreFactory DATA_STORE_FACTORY;
+    private final static GsonFactory gsonFactory;
+
+    private static final FileDataStoreFactory dataStoreFactory;
 
     private static final String GAMING_CATEGORY_ID;
 
-    private static final Logger LOGGER;
-
     static {
-        GSON_FACTORY = new GsonFactory();
+        gsonFactory = new GsonFactory();
 
         File directory = new File(System.getProperty("user.home"), ".credentials/youtube-upload");
 
         try {
-            DATA_STORE_FACTORY = new FileDataStoreFactory(directory);
+            dataStoreFactory = new FileDataStoreFactory(directory);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 
         GAMING_CATEGORY_ID = "20";
-
-        LOGGER = LoggerFactory.getLogger(Application.class);
     }
 
     private Map<LocalDate, List<File>> getDatesToVideos() {
@@ -73,7 +71,7 @@ public final class UploadService {
                 String[] parts = name.split(" ");
 
                 if (parts.length < 2) {
-                    LOGGER.warn("File \"{}\" does not start with a date", name);
+                    log.warn("File \"{}\" does not start with a date", name);
 
                     continue;
                 }
@@ -109,11 +107,11 @@ public final class UploadService {
         GoogleAuthorizationCodeFlow flow;
 
         try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GSON_FACTORY, inputStreamReader);
+            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(gsonFactory, inputStreamReader);
 
-            flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, GSON_FACTORY, clientSecrets,
+            flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, gsonFactory, clientSecrets,
                 List.of(YouTubeScopes.YOUTUBE_UPLOAD))
-                .setDataStoreFactory(DATA_STORE_FACTORY)
+                .setDataStoreFactory(dataStoreFactory)
                 .setAccessType("offline")
                 .build();
         }
@@ -130,7 +128,7 @@ public final class UploadService {
 
         Credential credential = this.getCredential(httpTransport);
 
-        YouTube.Builder builder = new YouTube.Builder(httpTransport, GSON_FACTORY, credential);
+        YouTube.Builder builder = new YouTube.Builder(httpTransport, gsonFactory, credential);
 
         builder.setApplicationName("YouTube League Uploader");
 
@@ -160,7 +158,7 @@ public final class UploadService {
 
         String title = this.getTitle(date, index, count);
 
-        LOGGER.info("Uploading {}...", title);
+        log.info("Uploading {}...", title);
 
         snippet.setTitle(title);
 
@@ -193,11 +191,11 @@ public final class UploadService {
 
             Video response = request.execute();
 
-            LOGGER.info("Upload response: {}", response);
+            log.info("Upload response: {}", response);
         } catch (IOException e) {
             String message = e.getMessage();
 
-            LOGGER.error(message, e);
+            log.error(message, e);
 
             throw new IllegalStateException(e);
         }
@@ -211,7 +209,7 @@ public final class UploadService {
         } catch (GeneralSecurityException | IOException e) {
             String message = e.getMessage();
 
-            LOGGER.error(message, e);
+            log.error(message, e);
 
             return;
         }
