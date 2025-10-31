@@ -144,14 +144,11 @@ public final class UploadService {
 
         String act = Config.get("app.league-of-legends.act");
 
-        String champion = Config.get("app.league-of-legends.champion");
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
         String dateString = formatter.format(date);
 
-        return  "LoL %s Season %s Act %s (%s) -- %s %d/%d".formatted(year, season, act, champion, dateString, index,
-            count);
+        return  "LoL %s Season %s Act %s -- %s %d/%d".formatted(year, season, act, dateString, index, count);
     }
 
     private Video getVideo(LocalDate date, Integer index, Integer count) {
